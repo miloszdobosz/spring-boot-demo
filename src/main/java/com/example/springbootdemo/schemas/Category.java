@@ -1,4 +1,4 @@
-package com.example.springbootdemo.messages;
+package com.example.springbootdemo.schemas;
 
 import java.util.ArrayList;
 

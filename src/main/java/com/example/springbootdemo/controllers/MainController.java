@@ -1,7 +1,7 @@
 package com.example.springbootdemo.controllers;
 
-import com.example.springbootdemo.messages.Category;
-import com.example.springbootdemo.messages.Item;
+import com.example.springbootdemo.schemas.Category;
+import com.example.springbootdemo.schemas.Item;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.HttpStatus;
