@@ -56,7 +56,7 @@ public class MainController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "Category added."),
             })
-    @PostMapping("/category")
+    @PostMapping(value = "/category", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> postCategory(@RequestParam(value = "name") String name) {
         Category category = new Category(categories.size(), name, new ArrayList<>());
         this.categories.add(category);
@@ -69,7 +69,7 @@ public class MainController {
                     @ApiResponse(responseCode = "200", description = "Category replaced."),
                     @ApiResponse(responseCode = "404", description = "Category not found.")
             })
-    @PutMapping("/category")
+    @PutMapping(value = "/category", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> putCategory(@RequestParam(value = "id") int id, @RequestParam String name) {
         try {
             this.categories.set(id, new Category(id, name, new ArrayList<>()));
@@ -85,7 +85,7 @@ public class MainController {
                     @ApiResponse(responseCode = "200", description = "Category replaced."),
                     @ApiResponse(responseCode = "404", description = "Category not found.")
             })
-    @DeleteMapping("/category")
+    @DeleteMapping(value = "/category", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Category> deleteCategory(@RequestParam(value = "id") int id) {
         try {
             this.categories.remove(id);
@@ -124,7 +124,7 @@ public class MainController {
                     @ApiResponse(responseCode = "200", description = "Item added."),
                     @ApiResponse(responseCode = "404", description = "Category not found."),
             })
-    @PostMapping("/item")
+    @PostMapping(value = "/item", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Item> postItem(@RequestParam(value = "category_id") int category_id, @RequestParam(value = "name") String name) {
         try {
             Category category = this.categories.get(category_id);
@@ -144,7 +144,7 @@ public class MainController {
                     @ApiResponse(responseCode = "404", description = "Category not found."),
                     @ApiResponse(responseCode = "454", description = "Item not found in existing category.")
             })
-    @PutMapping("/item")
+    @PutMapping(value = "/item", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Item> putItem(@RequestParam(value = "category_id") int category_id, @RequestParam(value = "id") int id, @RequestParam String name) {
         try {
             Category category = this.categories.get(category_id);
@@ -168,7 +168,7 @@ public class MainController {
                     @ApiResponse(responseCode = "404", description = "Category not found."),
                     @ApiResponse(responseCode = "454", description = "Item not found in existing category.")
             })
-    @DeleteMapping("/item")
+    @DeleteMapping(value = "/item", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Item> deleteItem(@RequestParam(value = "category_id") int category_id, @RequestParam(value = "id") int id) {
         try {
             Category category = this.categories.get(category_id);
