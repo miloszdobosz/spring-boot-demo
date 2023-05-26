@@ -27,6 +27,16 @@ public class MainController {
     }
 
     @Operation(
+            description = "Delete all existing categories.",
+            responses = {
+                    @ApiResponse(responseCode = "200"),
+            })
+    @DeleteMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void deleteHome() {
+        this.categories = new ArrayList<>();
+    }
+
+    @Operation(
             description = "Get category by id.",
             responses = {
                     @ApiResponse(responseCode = "200"),
@@ -63,7 +73,7 @@ public class MainController {
     public ResponseEntity<Category> putCategory(@RequestParam(value = "id") int id, @RequestParam String name) {
         try {
             this.categories.set(id, new Category(id, name, new ArrayList<>()));
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(this.categories.get(id), HttpStatus.OK);
         } catch (IndexOutOfBoundsException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -140,7 +150,7 @@ public class MainController {
             Category category = this.categories.get(category_id);
             try {
                 category.getItems().set(id, new Item(category_id, id, name));
-                return new ResponseEntity<>(HttpStatus.OK);
+                return new ResponseEntity<>(category.getItems().get(id), HttpStatus.OK);
             } catch (IndexOutOfBoundsException e) {
                 // Item not found
                 return new ResponseEntity<>(HttpStatusCode.valueOf(454));
@@ -159,7 +169,7 @@ public class MainController {
                     @ApiResponse(responseCode = "454", description = "Item not found in existing category.")
             })
     @DeleteMapping("/item")
-    public ResponseEntity<Item> deleteItem(@RequestParam(value = "category_id") int category_id, @RequestParam(value = "item_id") int id) {
+    public ResponseEntity<Item> deleteItem(@RequestParam(value = "category_id") int category_id, @RequestParam(value = "id") int id) {
         try {
             Category category = this.categories.get(category_id);
             try {
