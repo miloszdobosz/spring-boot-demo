@@ -12,10 +12,12 @@ import java.util.HashMap;
 
 @Service("userDetailsService")
 public class UserService implements UserDetailsService {
-    private final HashMap<String, String> roles = new HashMap<>();
+    private final HashMap<String, String[]> roles = new HashMap<>();
 
     public UserService() {
-        this.roles.put("2bc08eba-d9be-4b45-89ae-ac68fc7bc481", "admin");
+        this.roles.put("2bc08eba-d9be-4b45-89ae-ac68fc7bc481", new String[]{"admin", "developer", "user"});
+        this.roles.put("developer", new String[]{"developer", "user"});
+        this.roles.put("user", new String[]{"user"});
     }
 
     @Override
@@ -27,18 +29,14 @@ public class UserService implements UserDetailsService {
         String username;
         if (token.getClaim("upn").isMissing()) {
             username = token.getClaim("oid").asString();
-            System.out.println("oid");
-            System.out.println(username);
         } else {
             username = token.getClaim("upn").asString();
-            System.out.println("upn");
-            System.out.println(username);
         }
 
         builder.username(username);
         builder.password(jwtToken);
 
-        builder.roles(this.roles.get(username));
+        builder.roles(this.roles.getOrDefault(username, new String[]{""}));
         return builder.build();
     }
 }

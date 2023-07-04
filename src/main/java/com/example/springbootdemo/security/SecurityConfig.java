@@ -5,10 +5,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
@@ -20,43 +23,45 @@ import java.util.Collections;
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
+
+    @Autowired
+    @Lazy
+    PreAuthenticatedAuthenticationProvider preAuthenticatedAuthenticationProviderBean;
+
+    @Autowired
+    private ExceptionHandlerFilter exceptionHandlerFilter;
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf()
-                .disable()
-                .cors()
-                .and()
-                .exceptionHandling()
-                .and()
-                .authorizeHttpRequests()
-                .requestMatchers(
-                        "/api.html",
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**"
-                )
-                .permitAll()
-                .anyRequest()
-                .hasRole("admin")
-//                .sessionManagement()
-//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .addFilterAt(authenticationFilter(authenticationManager()), RequestHeaderAuthenticationFilter.class)
-        ;
-        return http.build();
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers(
+                "/api.html",
+                "/v3/api-docs/**"
+        );
     }
 
     @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .httpBasic().disable()
+                .csrf().disable()
+                .cors()
+                .and().authorizeHttpRequests()
+                .requestMatchers(HttpMethod.DELETE).hasRole("admin")
+                .requestMatchers(HttpMethod.POST).hasRole("developer")
+                .requestMatchers(HttpMethod.GET).hasRole("user")
+                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and().addFilterAt(authenticationFilter(authenticationManager()), RequestHeaderAuthenticationFilter.class)
+                .addFilterBefore(exceptionHandlerFilter, RequestHeaderAuthenticationFilter.class);
+        return http.build();
+    }
+
+    // Must not be a bean by itself or will be enabled even for ignored endpoints
     public RequestHeaderAuthenticationFilter authenticationFilter(AuthenticationManager authenticationManager) {
         RequestHeaderAuthenticationFilter authenticationFilter = new RequestHeaderAuthenticationFilter();
         authenticationFilter.setAuthenticationManager(authenticationManager);
         authenticationFilter.setPrincipalRequestHeader(HttpHeaders.AUTHORIZATION);
         return authenticationFilter;
     }
-
-    @Autowired
-    @Lazy
-    PreAuthenticatedAuthenticationProvider preAuthenticatedAuthenticationProviderBean;
 
     @Bean
     protected AuthenticationManager authenticationManager() {
@@ -65,7 +70,7 @@ public class SecurityConfig {
         return manager;
     }
 
-    @Bean(name = "preAuthProvider")
+    @Bean
     PreAuthenticatedAuthenticationProvider preAuthenticatedAuthenticationProvider(UserDetailsByNameServiceWrapper<PreAuthenticatedAuthenticationToken> userServiceWrapper) {
         final PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
         provider.setPreAuthenticatedUserDetailsService(userServiceWrapper);
